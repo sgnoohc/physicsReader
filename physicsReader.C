@@ -19,8 +19,8 @@ using namespace std;
 
 void physicsReader(){
 //Declare helper functions
-    ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float>> leading(vector<ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float>>> v1)
-    ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float>> subleading(vector<ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float>>> v1)
+    ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float>> leading(vector<ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float>>> v1);
+    ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float>> subleading(vector<ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float>>> v1);
 //Declare leaf types;
 	vector<Double_t> *mass;
 	vector<Double_t> *energy;
@@ -57,7 +57,7 @@ void physicsReader(){
 	t->SetBranchAddress("PID", &pid);
 	t->SetBranchAddress("M", &mass);
 	t->SetBranchAddress("E", &energy);
-	t->SetBranchAddress("P4", &p4)
+	t->SetBranchAddress("P4", &p4);
 
 //Get entry number
 	Long64_t entries = t->GetEntries();
@@ -73,10 +73,10 @@ void physicsReader(){
         ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float>> ordered[10];
 //find all the bottom quarks
 		t->GetEntry(i);
+		vector<ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float>>> bQ, Neu, Muon, qVBF;
 		for (Int_t j = 0; j < 8; j++) {
 			Int_t pidj = pid->at(j);
 //Sort out different particles
-            vector<ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float>>> bQ, Neu, Muon, qVBF;
             if (TMath::Abs(pidj) == 5) {
                 bQ.push_back(p4->at(j));
             }
@@ -126,12 +126,23 @@ void physicsReader(){
         rapidWsub->Fill(ordered[1].Rapidity());
         rapidHigg->Fill(ordered[2].Rapidity());
 	}
-//name histograms
+//Create file for saving
+    TFile f1("higgsAnalysis.root", "RECREATE", "histograms");
+
+//Name & save histograms
     for (int m = 0; m < 10; m++) {
-        pT[i]->SetTitle("transverse momentum of " + order[m]);
-        eTa[i]->SetTitle("Eta of " + order[m]);
-        phi[i]->SetTitle("Azimuthal angle of " + order[m]);
+        pT[m]->SetTitle(("transverse momentum of " + order[m]).c_str());
+        eTa[m]->SetTitle(("Eta of " + order[m]).c_str());
+        phi[m]->SetTitle(("Azimuthal angle of " + order[m]).c_str());
+        pT[m]->Write();
+        eTa[m]->Write();
+        phi[m]->Write();
     }
+    rapidWlead->Write();
+    rapidWsub->Write();
+    rapidHigg->Write();
+    wBoson->Write();
+    higg->Write();
 }
 
 ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float>> leading(vector<ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float>>> v1) {
